@@ -1,0 +1,16 @@
+===================================================
+How do I use SANs with openSSL instead of common name?
+===================================================
+
+
+At first you must have a CA and then sign your server cert by CA. I create a CA and server cert and finally sign server cert by command bellow.(change your desired -subj and CN)
+In your situation you should pass the subjectAltName when you signing server cert in latest command line below.
+
+openssl genrsa -out ca.key 2048
+openssl req -new -x509 -days 365 -key ca.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=Acme Root CA" -out ca.crt
+
+openssl req -newkey rsa:2048 -nodes -keyout server.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=*.example.com" -out server.csr
+openssl x509 -req -extfile <(printf "subjectAltName=DNS:example.com,DNS:www.example.com") -days 365 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
+
+
+After run this command you can use certs (server.crt,servert.key) in kubernetes or any other place.
