@@ -6,11 +6,70 @@ How do I use SANs with openSSL instead of common name?
 At first you must have a CA and then sign your server cert by CA. I create a CA and server cert and finally sign server cert by command bellow.(change your desired -subj and CN)
 In your situation you should pass the subjectAltName when you signing server cert in latest command line below.
 
-openssl genrsa -out ca.key 2048
-openssl req -new -x509 -days 365 -key ca.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=Acme Root CA" -out ca.crt
+[1] openssl genrsa -out ca.key 2048
+[2] openssl req -new -x509 -days 365 -key ca.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=Acme Root CA" -out ca.crt
 
-openssl req -newkey rsa:2048 -nodes -keyout server.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=*.example.com" -out server.csr
-openssl x509 -req -extfile <(printf "subjectAltName=DNS:example.com,DNS:www.example.com") -days 365 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
+[3] openssl req -newkey rsa:2048 -nodes -keyout server.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=*.example.com" -out server.csr
+[4] openssl x509 -req -extfile <(printf "subjectAltName=DNS:example.com,DNS:www.example.com") -days 365 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
 
 
-After run this command you can use certs (server.crt,servert.key) in kubernetes or any other place.
+After you run the above 4 commands in given sequence, you can use certs (server.crt,servert.key) in kubernetes or any other place.
+
+You can see that 
+
+# openssl x509 -in server.crt -noout -text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            07:78:b6:23:f0:b2:b5:64:a8:d4:bc:31:01:e5:96:17:fc:55:88:1f
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = CN, ST = GD, L = SZ, O = "Acme, Inc.", CN = Acme Root CA
+        Validity
+            Not Before: May 16 09:56:25 2022 GMT
+            Not After : May 16 09:56:25 2023 GMT
+        Subject: C = CN, ST = GD, L = SZ, O = "Acme, Inc.", CN = *.example.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:df:72:a2:2e:89:ae:03:9c:02:b6:37:1e:11:79:
+                    bf:71:67:96:31:d9:4b:25:1c:de:61:d5:52:c0:30:
+                    51:6b:74:b4:b7:0b:71:86:08:30:15:5c:f6:59:02:
+                    ae:0f:37:f3:da:a7:97:92:98:2a:50:6a:7e:85:50:
+                    99:b6:45:a0:23:68:6e:f1:d8:d6:31:7e:3e:a8:7d:
+                    56:22:43:3e:28:5e:68:4e:a1:e7:e8:47:54:cc:15:
+                    7b:a7:18:28:60:08:35:1a:38:61:06:fa:b7:89:3c:
+                    db:8f:0f:85:a6:d6:33:d9:6a:e9:be:8b:4e:56:7a:
+                    43:de:08:6b:6c:19:ea:b5:3f:98:61:56:9c:9e:21:
+                    96:20:20:0b:0a:0e:0a:de:dd:77:91:cf:dc:0e:10:
+                    6c:f4:76:d9:16:08:23:48:95:d6:69:3b:0d:71:9d:
+                    9f:85:60:d9:5c:26:4e:3e:ba:fa:08:a7:00:cd:22:
+                    63:4b:af:79:1d:db:3e:e5:8a:59:50:b4:45:db:b2:
+                    d2:d2:03:eb:d9:3c:04:b8:d4:79:e9:df:f6:ba:ce:
+                    ec:0a:fd:8f:28:eb:6a:c4:a7:17:3a:cd:6c:f1:e5:
+                    57:64:5e:77:fc:f5:48:49:64:0f:a9:3f:f4:8c:2d:
+                    4b:d1:85:5c:77:73:ec:21:b6:67:9d:53:e4:51:d9:
+                    de:3b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Alternative Name:
+                DNS:example.com, DNS:www.example.com
+    Signature Algorithm: sha256WithRSAEncryption
+         60:71:37:d1:70:46:21:0b:aa:b0:0f:60:82:39:8d:29:aa:b5:
+         54:0d:1e:35:c3:2d:50:0b:b3:31:0d:80:ae:db:60:3e:46:42:
+         9d:e0:59:de:62:3f:4a:b5:7a:29:27:d9:c3:47:ba:84:1a:34:
+         ec:28:f1:04:cc:39:d6:b7:b9:76:f0:11:fe:1b:1d:fd:74:cf:
+         4c:59:71:d2:54:4c:d3:2a:94:aa:bc:fc:7b:07:67:c3:ea:97:
+         63:ac:1c:39:c1:f6:fa:6d:02:63:97:f4:50:ef:9c:93:4d:6b:
+         ac:80:ef:36:b6:c1:a3:0c:d7:28:e1:bc:bd:45:e0:d4:e2:56:
+         e6:82:ed:0a:0b:36:f7:e9:64:5f:fb:61:7f:a2:46:81:50:7e:
+         51:b5:17:76:a5:d9:85:2b:5e:e3:75:02:3f:ab:33:db:f0:a0:
+         96:e7:66:05:80:af:ca:b2:36:3a:02:78:91:69:68:da:d2:1d:
+         de:06:e5:4e:14:1b:0b:37:e0:b3:61:f2:1b:5d:7c:cd:26:e6:
+         fc:7d:92:47:c4:34:f8:32:4e:db:06:13:2a:30:24:77:e7:64:
+         e1:77:dc:f7:70:c5:5b:a8:c8:ee:71:17:d3:80:d2:bb:2c:ee:
+         c0:ae:ac:3c:c4:f6:45:e2:59:a1:64:ab:70:a9:c9:a5:fa:23:
+         53:d1:de:bb
+
+
