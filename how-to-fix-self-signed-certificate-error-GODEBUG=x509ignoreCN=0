@@ -6,18 +6,25 @@ How do I use SANs with openSSL instead of common name?
 At first you must have a CA and then sign your server cert by CA. I create a CA and server cert and finally sign server cert by command bellow.(change your desired -subj and CN)
 In your situation you should pass the subjectAltName when you signing server cert in latest command line below.
 
+------------------------------------------
+Steps to generate self signed certificate
+------------------------------------------
 [1] openssl genrsa -out ca.key 2048
 [2] openssl req -new -x509 -days 365 -key ca.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=Acme Root CA" -out ca.crt
 
 [3] openssl req -newkey rsa:2048 -nodes -keyout server.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=*.example.com" -out server.csr
 [4] openssl x509 -req -extfile <(printf "subjectAltName=DNS:example.com,DNS:www.example.com") -days 365 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
+------------------------------------------
+Note: After you run the above 4 commands in given sequence, you can use certs (server.crt,servert.key) in kubernetes or any other place.
 
 
-After you run the above 4 commands in given sequence, you can use certs (server.crt,servert.key) in kubernetes or any other place.
 
-You can see that 
+---------------------------------------------------------------------
+You can see that extenstion has been passed from self signed certificate request(csr) to final certificate.
+---------------------------------------------------------------------
 
 # openssl x509 -in server.crt -noout -text
+
 Certificate:
     Data:
         Version: 3 (0x2)
@@ -71,5 +78,6 @@ Certificate:
          e1:77:dc:f7:70:c5:5b:a8:c8:ee:71:17:d3:80:d2:bb:2c:ee:
          c0:ae:ac:3c:c4:f6:45:e2:59:a1:64:ab:70:a9:c9:a5:fa:23:
          53:d1:de:bb
+         ---------------------------------------------------------------------
 
 
