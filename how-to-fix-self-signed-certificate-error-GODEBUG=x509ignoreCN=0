@@ -20,7 +20,7 @@ Note: After you run the above 4 commands in given sequence, you can use certs (s
 
 
 ---------------------------------------------------------------------
-You can see that extenstion has been passed from self signed certificate request(csr) to final certificate.
+You can see that "X509v3 extensions" has been passed from self signed certificate request(csr) to final certificate.
 ---------------------------------------------------------------------
 
 # openssl x509 -in server.crt -noout -text
